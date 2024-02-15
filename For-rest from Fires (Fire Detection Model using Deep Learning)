@@ -1,0 +1,128 @@
+# Import necessary libraries
+import os
+import cv2
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+
+def load_data(data_dir):
+    data_path = r"C:\Users\Anock\Downloads\FOREST_FIRE_SMOKE_AND_NON_FIRE_DATASET.zip"
+    fire_images = []
+    non_fire_images = []
+    
+    # Load fire images
+    fire_dir = os.path.join(data_dir, 'fire')
+    for img_name in os.listdir(fire_dir):
+        img_path = os.path.join(fire_dir, img_name)
+        img = cv2.imread(img_path)
+        img = cv2.resize(img, (128, 128))  # Resize image to 128x128
+        fire_images.append(img)
+    
+    # Load non-fire images
+    non_fire_dir = os.path.join(data_dir, 'non_fire')
+    for img_name in os.listdir(non_fire_dir):
+        img_path = os.path.join(non_fire_dir, img_name)
+        img = cv2.imread(img_path)
+        img = cv2.resize(img, (128, 128))  # Resize image to 128x128
+        non_fire_images.append(img)
+    
+    # Create labels
+    fire_labels = np.ones(len(fire_images))
+    non_fire_labels = np.zeros(len(non_fire_images))
+    
+    # Concatenate fire and non-fire images and labels
+    X = np.array(fire_images + non_fire_images)
+    y = np.concatenate([fire_labels, non_fire_labels])
+    
+    return X, y
+
+# Function to preprocess the data
+def preprocess_data(X):
+    # Normalize pixel values
+    X = X / 255.0
+    return X
+
+# Function to build the CNN model
+def build_model(input_shape):
+    model = Sequential([
+        Conv2D(32, (3, 3), activation='relu', input_shape=input_shape),
+        MaxPooling2D((2, 2)),
+        Conv2D(64, (3, 3), activation='relu'),
+        MaxPooling2D((2, 2)),
+        Conv2D(128, (3, 3), activation='relu'),
+        MaxPooling2D((2, 2)),
+        Flatten(),
+        Dense(128, activation='relu'),
+        Dense(1, activation='sigmoid')
+    ])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+
+# Function to train and evaluate the model
+def train_evaluate_model(X_train, y_train, X_test, y_test):
+    model = build_model(input_shape=X_train[0].shape)
+    model.fit(X_train, y_train, epochs=10, batch_size=32, validation_split=0.2)
+    y_pred = model.predict(X_test)
+    y_pred = np.round(y_pred).flatten()
+    accuracy = accuracy_score(y_test, y_pred)
+    print("Model Accuracy:", accuracy)
+
+# Main function
+def main():
+    # Step 1: Data collection
+    data_dir = r"path_to_your_data_directory"
+    X, y = load_data(data_dir)
+    
+    # Step 2: Data preprocessing
+    X = preprocess_data(X)
+    
+    # Step 3: Train/Test Split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Step 4: Model Selection, Training, Predicting, and Assessment
+    train_evaluate_model(X_train, y_train, X_test, y_test)
+
+    #Step 5:Model Selection, Training, Predicting and Assessment
+if __name__ == "__main__":
+    main()
+    
+    
+    from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+
+# Define hyperparameters to tune
+param_grid = {
+    'batch_size': [32, 64, 128],
+    'learning_rate': [0.001, 0.01, 0.1],
+    'filters': [16, 32, 64],
+    'kernel_size': [(3, 3), (5, 5), (7, 7)]
+}
+
+# Perform Grid Search or Random Search
+grid_search = GridSearchCV(model, param_grid, cv=3)
+grid_search.fit(X_train, y_train)
+
+best_params = grid_search.best_params_
+
+    #Step 6: Hyperparameter Tuning/Model Improvement
+
+from tensorflow.keras.layers import Dropout
+
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=input_shape),
+    MaxPooling2D((2, 2)),
+    Dropout(0.2),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Dropout(0.2),
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dropout(0.5),
+    Dense(1, activation='sigmoid')
+])
+
+
+
