@@ -1,0 +1,55 @@
+# Import necessary libraries
+import zipfile
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import GridSearchCV
+import joblib
+
+# Step 1: Data Collection
+data_path = r"C:\Users\Anock\Downloads\Intensity_data.zip"  # Using raw string to handle backslashes
+with zipfile.ZipFile(data_path, 'r') as zip_ref:
+    zip_ref.extractall("Intensity_data")
+
+# Load data
+intensity_data = pd.read_csv("Intensity_data/intensity_data.csv")
+
+# Step 2: Data Preprocessing
+# No changes have been made to the data
+
+# Step 3: Feature Engineering
+# Use TF-IDF vectorization for text features
+vectorizer = TfidfVectorizer(max_features=1000)
+X = vectorizer.fit_transform(intensity_data['text'])
+
+# Step 4: Train/Test Split
+X_train, X_test, y_train, y_test = train_test_split(X, intensity_data['intensity'], test_size=0.2, random_state=42)
+
+# Step 5: Model Selection
+rf_model = RandomForestClassifier(random_state=42)
+
+# Step 6: Model Training
+rf_model.fit(X_train, y_train)
+
+# Step 7: Model Evaluation
+rf_predictions = rf_model.predict(X_test)
+accuracy = accuracy_score(y_test, rf_predictions)
+print("Random Forest Accuracy:", accuracy)
+print(classification_report(y_test, rf_predictions))
+
+# Step 8: Hyperparameter Tuning
+param_grid = {
+    'n_estimators': [100, 200, 300],
+    'max_depth': [None, 10, 20, 30],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4]
+}
+grid_search = GridSearchCV(estimator=rf_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
+grid_search.fit(X_train, y_train)
+best_params = grid_search.best_params_
+best_model = grid_search.best_estimator_
+
+# Step 9: Deployment Plan
+joblib.dump(best_model, "intensity_model.pkl")
