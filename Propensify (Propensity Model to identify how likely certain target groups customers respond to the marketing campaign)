@@ -1,0 +1,49 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import zipfile
+
+# Step 1: Data Loading and Preprocessing
+zip_file_path = r"C:\Users\Anock\Downloads\Propensify.zip"
+# Extract the ZIP file
+with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    zip_ref.extractall(r"C:\Users\Anock\Downloads\Propensify")
+
+# Load the train data
+train_data = pd.read_excel(r"C:\Users\Anock\Downloads\Propensify\train.xlsx")
+
+# Perform exploratory data analysis (EDA)
+print(train_data.head())
+print(train_data.info())
+print(train_data.describe())
+
+# Step 2: Feature Engineering and Selection
+# Assuming no feature engineering is required for this basic example
+
+# Step 3: Model Selection and Training
+X = train_data.drop(columns=['target_column'])
+y = train_data['target_column']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Choose a classification model
+model = RandomForestClassifier(random_state=42)
+
+# Train the model
+model.fit(X_train, y_train)
+
+# Step 4: Model Evaluation and Hyperparameter Tuning
+# Evaluate the model
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Model Accuracy:", accuracy)
+
+# Step 5: Model Deployment Plan
+# Deployment Plan:
+# 1. Choose Deployment Platform: Deploy the model as a web service on Heroku.
+# 2. Package the trained model along with necessary dependencies.
+# 3. Set up the deployment environment on Heroku.
+# 4. Deploy the model as an API.
+# 5. Monitor the deployed model for performance and scalability.
+# 6. Prepare documentation explaining how to use the deployed model and its benefits for the company.
+
