@@ -1,0 +1,117 @@
+#Data Preprocessing:
+import os
+import cv2
+import numpy as np
+
+def load_data(data_dir):r"C:\Users\Anock\Downloads\MoodforMusic.zip"
+    X = []
+    y = []
+    mood_categories = os.listdir(data_dir)
+    for mood_category in mood_categories:
+        mood_dir = os.path.join(data_dir, mood_category)
+        for img_name in os.listdir(mood_dir):
+            img_path = os.path.join(mood_dir, img_name)
+            img = cv2.imread(img_path)
+            img = cv2.resize(img, (128, 128))  # Resize image to 128x128
+            X.append(img)
+            y.append(mood_category)
+    return np.array(X), np.array(y)
+
+def preprocess_data(X):
+    # Normalize pixel values
+    X = X / 255.0
+    return X
+
+# Example usage:
+data_dir = 'path_to_your_data_directory'
+X, y = load_data(data_dir)
+X = preprocess_data(X)
+print("Data loaded and preprocessed successfully!")
+
+#Mood Classification Model:
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+
+def build_model(input_shape, num_classes):
+    model = Sequential([
+        Conv2D(32, (3, 3), activation='relu', input_shape=input_shape),
+        MaxPooling2D((2, 2)),
+        Conv2D(64, (3, 3), activation='relu'),
+        MaxPooling2D((2, 2)),
+        Conv2D(128, (3, 3), activation='relu'),
+        MaxPooling2D((2, 2)),
+        Flatten(),
+        Dense(128, activation='relu'),
+        Dense(num_classes, activation='softmax')
+    ])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
+
+# Example usage:
+input_shape = (128, 128, 3)  # Assuming images are resized to 128x128 RGB
+num_classes = len(np.unique(y))
+model = build_model(input_shape, num_classes)
+model.summary()
+
+#Model Training:
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.utils import to_categorical
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Convert labels to one-hot encoded vectors
+y_train_encoded = to_categorical(y_train)
+y_test_encoded = to_categorical(y_test)
+
+# Train the model
+history = model.fit(X_train, y_train_encoded, epochs=10, batch_size=32, validation_split=0.2)
+
+# Evaluate the model
+test_loss, test_accuracy = model.evaluate(X_test, y_test_encoded)
+print("Test Accuracy:", test_accuracy)
+
+#Music Recommendation Engine:
+# Define a simple music recommendation function
+def recommend_music(mood):
+    # Example implementation - replace with your own recommendation logic
+    if mood == 'happy':
+        return ['Happy Song 1', 'Happy Song 2', 'Happy Song 3']
+    elif mood == 'sad':
+        return ['Sad Song 1', 'Sad Song 2', 'Sad Song 3']
+    elif mood == 'calm':
+        return ['Calm Song 1', 'Calm Song 2', 'Calm Song 3']
+    elif mood == 'energetic':
+        return ['Energetic Song 1', 'Energetic Song 2', 'Energetic Song 3']
+    else:
+        return []
+
+Model deployment: 
+predicted_mood = 'happy'  # Replace with the predicted mood from the classification model
+recommended_music = recommend_music(predicted_mood)
+print("Recommended Music:", recommended_music)
+
+Step 2: Deployment Plan
+Choose Deployment Platform:
+
+Decide whether to deploy the application as a web app, mobile app, or desktop app.
+Consider factors like accessibility, scalability, and target audience.
+Deployment Tools:
+
+For web deployment, use platforms like AWS, Heroku, or Google Cloud.
+For mobile app deployment, use app stores like Google Play Store or Apple App Store.
+Deployment Steps:
+
+Prepare the application for deployment by packaging all necessary files and dependencies.
+Set up the deployment environment on the chosen platform.
+Deploy the application following the platform-specific instructions.
+Testing and Monitoring:
+
+Test the deployed application thoroughly to ensure functionality and performance.
+Monitor the application for any errors or performance issues and address them promptly.
+User Feedback and Updates:
+
+Gather user feedback on the deployed application to identify areas for improvement.
+Regularly update the application with new features, bug fixes, and performance enhancements based on user feedback.
+
